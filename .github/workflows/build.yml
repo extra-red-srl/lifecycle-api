@@ -1,0 +1,105 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+env:
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'temurin'
+  MAVEN_VERSION: '3.9.6'
+  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_TAG: "{{ github.ref_name }}"
+  IMAGE_REGISTRY: ghcr.io
+  DOCKERFILE_PATH: './src/main/docker/Dockerfile.jvm'
+  DOCKERHUB_REPO: your-dockerhub-username/${{ github.event.repository.name }}
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Extract artifactId and version
+        id: extract_version
+        run: |
+          ARTIFACT_FINALNAME=$(mvn help:evaluate -Dexpression=project.build.finalName -q -DforceStdout)
+          echo "final_name=$ARTIFACT_FINALNAME" >> $GITHUB_OUTPUT
+
+      - name: Run build
+        run: |
+          mvn clean package
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          file: ${{ env.DOCKERFILE_PATH }}
+
+      # - name: Upload JAR to GitHub Releases
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     files: target/*.jar
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "{{ github.ref_name }}"
+          release_name: Release {{ github.ref_name }}
+          body: |
+            ## Changes in this Release
+            
+            ### Docker Images
+            - Container Image Registry: `${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}`
+            
+            ### Artifacts
+            - JAR artifact is attached to this release
+            
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/{{ github.ref_name }}...HEAD
+          draft: false
+          prerelease: false
+
+      - name: Upload JAR artifact to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./lifecycle-api/target/lifecycle-api-${{ steps.extract_version.outputs.ARTIFACT_FINALNAME }}.jar
+          asset_name: lifecycle-api-${{ steps.extract_version.outputs.ARTIFACT_FINALNAME }}.jar
+          asset_content_type: application/java-archive
