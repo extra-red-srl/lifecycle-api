@@ -1,4 +1,4 @@
-name: Linux JDK GitHub CI
+name: Maven Test
 
 on:
   pull_request:
