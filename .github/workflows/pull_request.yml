@@ -10,7 +10,7 @@ env:
   MAVEN_VERSION: '3.9.6'
 
 jobs:
-  test:
+  mvn-test:
     runs-on: ubuntu-latest
     
     steps:
@@ -38,3 +38,4 @@ jobs:
     - name: Run tests
       run: |
         mvn test
+        exit 1
