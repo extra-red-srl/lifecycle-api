@@ -37,7 +37,7 @@ jobs:
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.m2
+          path: ~/.m2/repository
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2-
 
@@ -99,6 +99,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./lifecycle-api/target/lifecycle-api-${{ steps.extract_version.outputs.ARTIFACT_FINALNAME }}.jar
-          asset_name: lifecycle-api-${{ steps.extract_version.outputs.ARTIFACT_FINALNAME }}.jar
+          asset_path: ./target/${{ steps.extract_version.outputs.ARTIFACT_FINALNAME }}.jar
+          asset_name: ${{ steps.extract_version.outputs.ARTIFACT_FINALNAME }}.jar
           asset_content_type: application/java-archive
