@@ -99,6 +99,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./target/${{ steps.extract_version.outputs.ARTIFACT_FINALNAME }}.jar
-          asset_name: ${{ steps.extract_version.outputs.ARTIFACT_FINALNAME }}.jar
+          asset_path: ./target/${{ steps.extract_version.outputs.final_name }}.jar
+          asset_name: ${{ steps.extract_version.outputs.final_name }}.jar
           asset_content_type: application/java-archive
