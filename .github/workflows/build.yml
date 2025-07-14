@@ -13,7 +13,6 @@ env:
   IMAGE_TAG: "{{ github.ref_name }}"
   IMAGE_REGISTRY: ghcr.io
   DOCKERFILE_PATH: './src/main/docker/Dockerfile.jvm'
-  DOCKERHUB_REPO: your-dockerhub-username/${{ github.event.repository.name }}
 
 jobs:
   build-release:
