@@ -6,6 +6,7 @@ on:
 
 env:
   JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'temurin'
   MAVEN_VERSION: '3.9.6'
 
 jobs:
@@ -21,6 +22,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         java-version: ${{ env.JAVA_VERSION }}
+        distribution: ${{ env.JAVA_DISTRIBUTION }}
 
     - name: Set up Maven
       uses: stCarolas/setup-maven@v5
