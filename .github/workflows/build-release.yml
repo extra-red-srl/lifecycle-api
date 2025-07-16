@@ -7,11 +7,7 @@ on:
 
 jobs:
   shared-job:
-<<<<<<< HEAD
-    uses: extra-red-srl/dpp-pipelines/.github/workflows/quakrus-build-release.yml@main
-=======
     uses: extra-red-srl/dpp-pipelines/.github/workflows/quarkus-build-release.yml@main
->>>>>>> feature/github-pipeline
     with:
       java_version: '21'
       java_distribution: 'temurin'
@@ -19,8 +15,4 @@ jobs:
       image_name: '${{ github.repository }}'
       image_tag: '${{ github.ref_name }}'
       image_registry: 'ghcr.io'
-<<<<<<< HEAD
       dockerfile_path: './src/main/docker/Dockerfile.jvm'
-=======
-      dockerfile_path: './src/main/docker/Dockerfile.jvm'
->>>>>>> feature/github-pipeline
